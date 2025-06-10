@@ -1,0 +1,10 @@
+# OpenCV
+opencv-python
+opencv-contrib-python   # StructuredForests API
+
+# Deep Learning / Filter
+torch      # CPU‑Version – GPU‑User wählen passende Build
+kornia     # GPU‑beschleunigte Canny/Sobel
+
+# Utility
+requests
