@@ -19,8 +19,8 @@ torchvision>=0.10.0
 kornia>=0.6.0
 
 # --------------------------------------------------
-# Kantenerkennung (pip-Paket)
-pytorch-hed
+# Kantenerkennung (angepasster Fork)
+pytorch-hed @ git+https://github.com/<DEIN-USER>/pytorch-hed@v0.5.1
 
 # --------------------------------------------------
 # Basis-Bibliotheken

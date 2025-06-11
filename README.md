@@ -97,7 +97,10 @@ if not exist models  mkdir models
 :: 6) Starte Streamlit
 streamlit run streamlit_app.py --server.headless false --server.port 8501
 ```
-   Bei Problemen mit `pytorch-hed` gegebenenfalls `setup.py` auf `python_requires='>=3.7'` anpassen. Sollte `opencv-python==4.5.0.52` fehlen, kann eine aktuelle Version verwendet werden.
+   Für `pytorch-hed` wird ein eigener Fork genutzt, da die Originalversion ein fehlerhaftes `setup.cfg` besitzt. Passe die Zeile in `requirements.txt` ggf. auf dein GitHub-Konto an:
+   ```
+   pytorch-hed @ git+https://github.com/<DEIN-USER>/pytorch-hed@v0.5.1
+   ```
 3. Die GUI ist anschließend unter http://localhost:8501 erreichbar.
 
 ## 4. Nutzung
@@ -116,6 +119,17 @@ streamlit run streamlit_app.py --server.headless false --server.port 8501
 python run_edge_detectors.py --input_dir images --output_dir results --methods Kornia_Canny HED_PyTorch
 ```
 Die Ergebnisse liegen unter `results/edge_detection_results` als `{bildname}_{algorithmus}.png`. Die Datei `processing_summary.txt` fasst Auflösung und Methoden zusammen.
+
+## Entwickler-Setup
+Für Code-Beiträge wird [pre-commit](https://pre-commit.com) genutzt. Nach dem
+Clonen des Repos reicht einmalig:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+Damit laufen Formatierung und Linting automatisch vor jedem Commit.
 
 ## 5. Architektur & Code-Struktur
 - **detectors.py** – Algorithmen, Modell-Downloads und Hilfsfunktionen
@@ -168,8 +182,8 @@ Der Datenfluss lautet: GUI/CLI → Bild- & Methodenwahl → Verarbeitung in `det
 4. Tests, Dokumentation und ggf. Screenshots beisteuern.
 
 ## 8. Bekannte Probleme
-- `pytorch-hed` benötigt eventuell einen Fix des `setup.py` (`python_requires='>=3.7'`).
-- `opencv-python==4.5.0.52` ist nicht mehr verfügbar – aktuelle Version verwenden.
+- Falls der Custom-Fork von `pytorch-hed` nicht erreichbar ist, muss ein eigener Fork erstellt werden.
+- `opencv-python==4.5.0.52` ist nicht mehr verfügbar – eine aktuelle Version wird automatisch installiert.
 - Der `streamlit`-Befehl muss im `PATH` liegen, sonst startet die GUI nicht.
 
 ## 9. Lizenz, Autor:innen & Mitwirken

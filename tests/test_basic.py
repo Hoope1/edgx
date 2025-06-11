@@ -1,10 +1,9 @@
-import os
 import pathlib
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "src"))
 
-from detectors import run_laplacian
+from edgx.detectors import run_laplacian
 
 
 def test_laplacian_smoke():
