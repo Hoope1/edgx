@@ -14,7 +14,7 @@ import numpy as np
 import requests
 import torch
 
-logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
+logger = logging.getLogger(__name__)
 
 BASE_DIR = os.path.dirname(__file__)
 MODEL_DIR = os.path.join(BASE_DIR, "models")
@@ -22,6 +22,7 @@ HED_DIR = os.path.join(MODEL_DIR, "hed")
 STRUCT_DIR = os.path.join(MODEL_DIR, "structured")
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+logger.info("Using %s device", DEVICE)
 
 # ------------------------------------------------------
 # Alternative URLs für HED (Fallback-Strategie)
@@ -47,18 +48,18 @@ def _download_with_fallback(urls: list, dst: str) -> bool:
 
     for i, url in enumerate(urls):
         try:
-            print(f"[download] {os.path.basename(dst)}  (URL {i+1}/{len(urls)})")
+            logger.info("[download] %s (URL %d/%d)", os.path.basename(dst), i + 1, len(urls))
             r = requests.get(url, timeout=60)
             r.raise_for_status()
             with open(dst, "wb") as fh:
                 fh.write(r.content)
             return True
         except Exception as e:
-            print(f"[failed ] URL {i+1} fehlgeschlagen: {e}")
+            logger.warning("[failed ] URL %d fehlgeschlagen: %s", i + 1, e)
             if i < len(urls) - 1:
-                print("[retry  ] Versuche nächste URL …")
+                logger.info("[retry  ] Versuche nächste URL …")
 
-    print(f"[error  ] Alle URLs für {os.path.basename(dst)} fehlgeschlagen")
+    logger.error("[error  ] Alle URLs für %s fehlgeschlagen", os.path.basename(dst))
     return False
 
 
@@ -236,9 +237,9 @@ def init_models() -> None:
                 ],
                 check=True,
             )
-            print("[success] BDCN installiert")
+            logger.info("[success] BDCN installiert")
         except Exception as e:
-            print(f"[warning] BDCN konnte nicht geklont/gebaut werden: {e}")
+            logger.warning("BDCN konnte nicht geklont/gebaut werden: %s", e)
 
 
 # ------------------------------------------------------
@@ -305,8 +306,8 @@ def run_kornia_canny(path: str, target_size: tuple | None = None) -> np.ndarray:
     import kornia
 
     g = _load_image(path, cv2.IMREAD_GRAYSCALE)
-    t = torch.tensor(g / 255.0, dtype=torch.float32)[None, None]
-    edges = kornia.filters.canny(t)[0][0].numpy()
+    t = torch.tensor(g / 255.0, dtype=torch.float32, device=DEVICE)[None, None]
+    edges = kornia.filters.canny(t)[0][0].cpu().numpy()
     return standardize_output(edges, target_size)
 
 
@@ -314,10 +315,10 @@ def run_kornia_sobel(path: str, target_size: tuple | None = None) -> np.ndarray:
     import kornia
 
     g = _load_image(path, cv2.IMREAD_GRAYSCALE)
-    t = torch.tensor(g / 255.0, dtype=torch.float32)[None, None]
+    t = torch.tensor(g / 255.0, dtype=torch.float32, device=DEVICE)[None, None]
     sx = kornia.filters.sobel(t, normalized=True)
     sy = kornia.filters.sobel(t, normalized=True, dim=3)
-    mag = torch.sqrt(sx**2 + sy**2)[0, 0].numpy()
+    mag = torch.sqrt(sx**2 + sy**2)[0, 0].cpu().numpy()
     return standardize_output(mag, target_size)
 
 
@@ -406,7 +407,7 @@ def run_bdcn(path: str, target_size: tuple | None = None) -> np.ndarray:
         edge = BDCNEdgeDetector().detect(img)
         return standardize_output(edge, target_size)
     except Exception:
-        print("[fallback] BDCN nicht verfügbar → Canny Fallback")
+        logger.warning("[fallback] BDCN nicht verfügbar → Canny Fallback")
         g = _load_image(path, cv2.IMREAD_GRAYSCALE)
         edges = cv2.Canny(cv2.GaussianBlur(g, (5, 5), 0), 50, 150)
         return standardize_output(edges, target_size)
@@ -414,14 +415,14 @@ def run_bdcn(path: str, target_size: tuple | None = None) -> np.ndarray:
 
 def run_fixed_cnn(path: str, target_size: tuple | None = None) -> np.ndarray:
     g = _load_image(path, cv2.IMREAD_GRAYSCALE)
-    k = torch.tensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=torch.float32)
-    cx = torch.nn.Conv2d(1, 1, 3, padding=1, bias=False)
+    k = torch.tensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=torch.float32, device=DEVICE)
+    cx = torch.nn.Conv2d(1, 1, 3, padding=1, bias=False).to(DEVICE)
     cx.weight.data = k[None, None]
-    cy = torch.nn.Conv2d(1, 1, 3, padding=1, bias=False)
+    cy = torch.nn.Conv2d(1, 1, 3, padding=1, bias=False).to(DEVICE)
     cy.weight.data = k.T[None, None]
     with torch.no_grad():
-        t = torch.tensor(g / 255.0, dtype=torch.float32)[None, None]
-        e = torch.sqrt(cx(t) ** 2 + cy(t) ** 2)[0, 0].numpy()
+        t = torch.tensor(g / 255.0, dtype=torch.float32, device=DEVICE)[None, None]
+        e = torch.sqrt(cx(t) ** 2 + cy(t) ** 2)[0, 0].cpu().numpy()
     return standardize_output(e, target_size)
 
 
@@ -461,6 +462,6 @@ if __name__ == "__main__":
         init_models()
     elif args.list_methods:
         for i, (n, _) in enumerate(get_all_methods(), 1):
-            print(f"{i:02d}. {n}")
+            logger.info("%02d. %s", i, n)
     else:
-        print("Nutze --init-models oder --list-methods")
+        logger.info("Nutze --init-models oder --list-methods")

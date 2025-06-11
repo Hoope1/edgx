@@ -35,13 +35,13 @@ python -m pip install -r requirements.txt || goto :req_fallback
 goto :req_ok
 :req_fallback
 echo ⚠️  Sammel-Installation fehlgeschlagen – installiere Kernpakete …
-python -m pip install streamlit opencv-python opencv-contrib-python torch torchvision kornia requests pillow numpy pytorch-hed
+python -m pip install streamlit opencv-python opencv-contrib-python torch torchvision kornia requests pillow numpy git+https://github.com/Hoope1/pytorch-hed@v0.5.1
 :req_ok
 
 :: -------------------------------------------------
 :: 4) Modelle
 :: -------------------------------------------------
-python detectors.py --init-models
+python -m edgx.detectors --init-models
 
 :: -------------------------------------------------
 :: 5) Verzeichnisstruktur
@@ -54,6 +54,6 @@ if not exist models  mkdir models
 :: 6) Starte Streamlit
 :: -------------------------------------------------
 echo 🚀  Starte GUI …
-streamlit run streamlit_app.py --server.headless false --server.port 8501
+streamlit run src\edgx\streamlit_app.py --server.headless false --server.port 8501
 echo 👋  beendet – bye
 pause
