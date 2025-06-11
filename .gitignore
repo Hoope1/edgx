@@ -2,3 +2,5 @@
 venv/
 bdcn_repo/
 models/
+results/
+.coverage
