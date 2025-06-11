@@ -1,18 +1,448 @@
+# =============================================================================
+# Pre-commit Configuration für Edge Detection Studio
+# =============================================================================
+#
+# Installation:
+#   pip install pre-commit
+#   pre-commit install
+#
+# Manueller Run:
+#   pre-commit run --all-files
+#
+# Update hooks:
+#   pre-commit autoupdate
+#
+# =============================================================================
+
+# Siehe https://pre-commit.com für weitere Informationen
+# Siehe https://pre-commit.com/hooks.html für weitere hooks
+
 repos:
+  # =============================================================================
+  # Standard Pre-commit Hooks
+  # =============================================================================
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      # Whitespace und Formatting
+      - id: trailing-whitespace
+        description: Entfernt trailing whitespace
+        args: [--markdown-linebreak-ext=md]
+      
+      - id: end-of-file-fixer
+        description: Stellt sicher, dass Dateien mit Newline enden
+        exclude: \.min\.(js|css)$
+      
+      - id: mixed-line-ending
+        description: Normalisiert Line-Endings
+        args: [--fix=lf]
+      
+      # File-Validierung
+      - id: check-yaml
+        description: Validiert YAML-Syntax
+        exclude: \.github/.*\.ya?ml$  # GitHub Actions können erweiterte Syntax haben
+      
+      - id: check-toml
+        description: Validiert TOML-Syntax
+      
+      - id: check-json
+        description: Validiert JSON-Syntax
+      
+      - id: check-xml
+        description: Validiert XML-Syntax
+      
+      # Python-spezifische Checks
+      - id: check-ast
+        description: Prüft Python AST
+        language: python
+      
+      - id: check-docstring-first
+        description: Prüft, dass Docstrings vor Code stehen
+      
+      - id: debug-statements
+        description: Prüft auf Debug-Statements (pdb, ipdb, etc.)
+      
+      - id: name-tests-test
+        description: Stellt sicher, dass Tests mit test_ beginnen
+        args: [--pytest-test-first]
+      
+      # Security Checks
+      - id: check-added-large-files
+        description: Verhindert das Hinzufügen großer Dateien
+        args: [--maxkb=1024]  # 1MB Limit
+      
+      - id: check-private-key
+        description: Prüft auf private SSH-Keys
+      
+      - id: detect-aws-credentials
+        description: Prüft auf AWS-Credentials
+      
+      - id: detect-private-key
+        description: Prüft auf private Keys
+      
+      # Merge Conflicts
+      - id: check-merge-conflict
+        description: Prüft auf ungelöste Merge-Konflikte
+      
+      # Case Conflicts (wichtig für Windows/macOS)
+      - id: check-case-conflict
+        description: Prüft auf Case-Konflikte in Dateinamen
+      
+      # Executable Permissions
+      - id: check-executables-have-shebangs
+        description: Stellt sicher, dass ausführbare Dateien Shebangs haben
+      
+      - id: check-shebang-scripts-are-executable
+        description: Stellt sicher, dass Skripte mit Shebangs ausführbar sind
+
+  # =============================================================================
+  # Python Code Formatting - Black
+  # =============================================================================
   - repo: https://github.com/psf/black
     rev: 24.3.0
     hooks:
       - id: black
-  - repo: https://github.com/pre-commit/mirrors-flake8
-    rev: v6.1.0
-    hooks:
-      - id: flake8
-  - repo: https://github.com/pre-commit/mirrors-isort
-    rev: v5.12.0
+        description: Python Code Formatter
+        language_version: python3
+        args: [--line-length=88]
+        files: \.py$
+        exclude: |
+          (?x)^(
+              migrations/.*|
+              .*_pb2\.py|
+              venv/.*|
+              \.venv/.*
+          )$
+
+  # =============================================================================
+  # Import Sorting - isort
+  # =============================================================================
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
     hooks:
       - id: isort
+        description: Sort Python imports
+        args: [--profile=black, --line-length=88]
+        files: \.py$
+        exclude: |
+          (?x)^(
+              migrations/.*|
+              .*_pb2\.py|
+              venv/.*|
+              \.venv/.*
+          )$
+
+  # =============================================================================
+  # Linting - flake8
+  # =============================================================================
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        description: Python Linter
+        args: 
+          - --max-line-length=88
+          - --extend-ignore=E203,E266,E501,W503,E402,E731,E722,E741,E265,W504
+          - --exclude=venv,.venv,migrations,*_pb2.py
+          - --per-file-ignores=__init__.py:F401,tests/*:S101,S603,S607
+        files: \.py$
+        additional_dependencies:
+          - flake8-docstrings  # Docstring linting
+          - flake8-bugbear     # Zusätzliche Checks
+          - flake8-comprehensions  # Comprehension checks
+          - flake8-simplify    # Code simplification suggestions
+
+  # =============================================================================
+  # Type Checking - mypy
+  # =============================================================================
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.8.0
     hooks:
       - id: mypy
-        args: [--config-file=setup.cfg]
+        description: Static type checker
+        args: [--config-file=setup.cfg, --ignore-missing-imports]
+        files: \.py$
+        exclude: |
+          (?x)^(
+              tests/.*|
+              migrations/.*|
+              .*_pb2\.py|
+              venv/.*|
+              \.venv/.*
+          )$
+        additional_dependencies:
+          - types-requests
+          - types-Pillow
+          - opencv-python-stubs
+
+  # =============================================================================
+  # Security Linting - bandit
+  # =============================================================================
+  - repo: https://github.com/pycqa/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        description: Security linter
+        args: [-r, src/, -f, json, -o, bandit-report.json]
+        files: \.py$
+        exclude: |
+          (?x)^(
+              tests/.*|
+              test_.*\.py|
+              .*_test\.py
+          )$
+
+  # =============================================================================
+  # Documentation - pycodestyle docstring conventions
+  # =============================================================================
+  - repo: https://github.com/pycqa/pydocstyle
+    rev: 6.3.0
+    hooks:
+      - id: pydocstyle
+        description: Docstring style checker
+        args: [--convention=numpy, --add-ignore=D100,D104,D105,D107]
+        files: \.py$
+        exclude: |
+          (?x)^(
+              tests/.*|
+              migrations/.*|
+              .*_pb2\.py|
+              setup\.py|
+              venv/.*|
+              \.venv/.*
+          )$
+
+  # =============================================================================
+  # Dependency Checks
+  # =============================================================================
+  - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+    rev: v1.3.2
+    hooks:
+      - id: python-safety-dependencies-check
+        description: Check for known security vulnerabilities
+        files: requirements.*\.txt$
+
+  # =============================================================================
+  # YAML/JSON/TOML Formatting
+  # =============================================================================
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        description: Format YAML, JSON, Markdown
+        types_or: [yaml, json, markdown]
+        exclude: |
+          (?x)^(
+              \.github/.*\.ya?ml$|
+              package-lock\.json$
+          )$
+
+  # =============================================================================
+  # Secrets Detection
+  # =============================================================================
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        description: Detect secrets in code
+        args: [--baseline, .secrets.baseline]
+        exclude: |
+          (?x)^(
+              \.git/.*|
+              \.pytest_cache/.*|
+              .*\.lock$|
+              package-lock\.json$
+          )$
+
+  # =============================================================================
+  # Shell Script Linting (falls vorhanden)
+  # =============================================================================
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.6
+    hooks:
+      - id: shellcheck
+        description: Shell script linter
+        files: \.(sh|bash|zsh)$
+        exclude: \.git/hooks/.*
+
+  # =============================================================================
+  # Edge Detection Studio Specific Checks
+  # =============================================================================
+  - repo: local
+    hooks:
+      # Custom Python path validation
+      - id: validate-python-imports
+        name: Validate Python Import Paths
+        entry: python
+        language: system
+        args: [-c, "
+          import sys;
+          import ast;
+          import os;
+          
+          def check_imports(filename):
+              try:
+                  with open(filename, 'r', encoding='utf-8') as f:
+                      tree = ast.parse(f.read())
+                  
+                  for node in ast.walk(tree):
+                      if isinstance(node, ast.ImportFrom):
+                          if node.module and node.module.startswith('edgx.'):
+                              # Relative imports sollten verwendet werden
+                              if filename.startswith('src/edgx/'):
+                                  print(f'WARNING: Absolute import in {filename}: {node.module}')
+                  return True
+              except Exception as e:
+                  print(f'Error checking {filename}: {e}')
+                  return False
+          
+          files = [f for f in sys.argv[1:] if f.endswith('.py')];
+          all_good = all(check_imports(f) for f in files);
+          sys.exit(0 if all_good else 1)
+        "]
+        files: \.py$
+        exclude: |
+          (?x)^(
+              tests/.*|
+              setup\.py|
+              venv/.*|
+              \.venv/.*
+          )$
+
+      # Model file size check
+      - id: check-model-files
+        name: Check Model File Sizes
+        entry: python
+        language: system
+        args: [-c, "
+          import sys;
+          import os;
+          
+          model_extensions = ['.caffemodel', '.pth', '.onnx', '.h5', '.pkl'];
+          large_files = [];
+          
+          for filename in sys.argv[1:]:
+              if any(filename.endswith(ext) for ext in model_extensions):
+                  if os.path.exists(filename):
+                      size_mb = os.path.getsize(filename) / (1024 * 1024);
+                      if size_mb > 100:  # 100MB limit
+                          large_files.append(f'{filename} ({size_mb:.1f}MB)');
+          
+          if large_files:
+              print('ERROR: Large model files detected (should be downloaded automatically):');
+              for f in large_files:
+                  print(f'  {f}');
+              print('Consider adding these files to .gitignore or models/ directory');
+              sys.exit(1);
+          sys.exit(0)
+        "]
+        files: \.(caffemodel|pth|onnx|h5|pkl)$
+        pass_filenames: true
+
+      # Requirements.txt dependency validation
+      - id: validate-requirements
+        name: Validate Requirements.txt
+        entry: python
+        language: system
+        args: [-c, "
+          import sys;
+          
+          def validate_req_file(filename):
+              try:
+                  with open(filename, 'r') as f:
+                      lines = [l.strip() for l in f if l.strip() and not l.startswith('#')];
+                  
+                  # Check for problematic patterns
+                  issues = [];
+                  for line in lines:
+                      if 'pytorch-hed' in line and 'github.com/Hoope1' in line:
+                          issues.append(f'Dead repository link: {line}');
+                      if line.startswith('git+') and not line.startswith('git+https://'):
+                          issues.append(f'Unsecure git URL: {line}');
+                  
+                  if issues:
+                      print(f'Issues in {filename}:');
+                      for issue in issues:
+                          print(f'  {issue}');
+                      return False;
+                  return True;
+              except Exception as e:
+                  print(f'Error validating {filename}: {e}');
+                  return False;
+          
+          files = [f for f in sys.argv[1:] if 'requirements' in f and f.endswith('.txt')];
+          all_good = all(validate_req_file(f) for f in files);
+          sys.exit(0 if all_good else 1)
+        "]
+        files: requirements.*\.txt$
+        pass_filenames: true
+
+# =============================================================================
+# Configuration
+# =============================================================================
+
+# Global Configuration
+default_stages: [commit]
+minimum_pre_commit_version: 2.21.0
+
+# Performance: Only run on changed files by default
+default_language_version:
+  python: python3.10
+
+# Fail fast: Stop on first failure
+fail_fast: false
+
+# Repository-wide excludes
+exclude: |
+  (?x)^(
+      \.git/.*|
+      \.tox/.*|
+      \.nox/.*|
+      venv/.*|
+      \.venv/.*|
+      __pycache__/.*|
+      \.pytest_cache/.*|
+      \.mypy_cache/.*|
+      node_modules/.*|
+      models/.*|
+      results/.*|
+      .*\.egg-info/.*|
+      build/.*|
+      dist/.*
+  )$
+
+# =============================================================================
+# CI-spezifische Konfiguration
+# =============================================================================
+
+# Diese Hooks werden bei CI/CD ausgeführt
+ci:
+  # Repositories to auto-update
+  autoupdate_commit_msg: "chore: update pre-commit hooks"
+  autoupdate_schedule: weekly
+  
+  # Skip these hooks in CI (da sie zu lange dauern könnten)
+  skip:
+    - python-safety-dependencies-check  # Kann in separatem Job laufen
+    - detect-secrets  # Kann in separatem Security-Job laufen
+
+# =============================================================================
+# Kommentare für Entwickler
+# =============================================================================
+
+# Installation und Nutzung:
+# 1. pip install pre-commit
+# 2. pre-commit install
+# 3. pre-commit run --all-files (initialer Check)
+#
+# Bei Problemen:
+# - pre-commit clean (Cache löschen)
+# - pre-commit install --install-hooks (Hooks neu installieren)
+# - pre-commit run <hook-id> (Einzelnen Hook testen)
+#
+# Hooks überspringen (nur für Notfälle):
+# - git commit --no-verify
+# - SKIP=flake8 git commit -m "message"
+#
+# Updates:
+# - pre-commit autoupdate (Alle Hooks aktualisieren)
