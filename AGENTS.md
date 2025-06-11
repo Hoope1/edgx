@@ -1,5 +1,5 @@
-Im Folgenden findest du eine vollständig aktualisierte AGENTS.md für das Edge Detection Studio-Repository.
-Alle Hinweise wurden auf Windows 11-Umgebungen und Python 3.10 angepasst; die Datei ist so gestaltet, dass jeder AI-Agent (z. B. GitHub-Copilot / OpenAI Codex) sofort alle Regeln, Workflows und Konventionen versteht und beachtet.
+Diese Datei enthaelt Richtlinien fuer AI-Agents.
+Sie wurde fuer Windows 11 und Python 3.10 entwickelt, laeuft aber auch auf anderen Plattformen.
 
 Kurz-Zusammenfassung (1 Absatz)
 Edge Detection Studio bietet eine Zero-Config-Suite zur Kantenerkennung mit 15 klassischen und Deep-Learning-Algorithmen. Es läuft „out of the box“ unter Windows 11 (64-Bit) und setzt Python 3.10 als Referenz-Interpreter voraus – beide Plattformen werden von allen verwenden Bibliotheken (Streamlit, PyTorch, OpenCV, Kornia u. a.) offiziell unterstützt.(python.org, support.microsoft.com) Das Projekt enthält eine Batch-CLI, eine Streamlit-GUI, automatischen Modell-Download, klare Coding-Standards sowie detaillierte Regeln, wie Agents neue Methoden oder UI-Komponenten konform integrieren können.

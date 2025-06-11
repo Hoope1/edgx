@@ -2,21 +2,28 @@
 """
 Erweiterte Edge-Detection-Pipeline
 
-• Skalierung aller Ausgaben auf die höchste Eingabe-Auflösung  
-• Invertierte Ergebnisse (weißer BG, dunkle Kanten)  
-• Unterstützung von 15 verschiedenen Algorithmen  
+• Skalierung aller Ausgaben auf die höchste Eingabe-Auflösung
+• Invertierte Ergebnisse (weißer BG, dunkle Kanten)
+• Unterstützung von 15 verschiedenen Algorithmen
 • Ergebnis-Zusammenfassung im Zielordner
 """
 from __future__ import annotations
-import argparse, os, glob, cv2, time
+
+import argparse
+import glob
+import os
+import time
 from pathlib import Path
 from typing import List, Tuple
 
+import cv2
+
+from detectors import standardize_output  # für eventuelles Upscaling in Fallbacks
 from detectors import (
     get_all_methods,
     get_max_resolution,
-    standardize_output  # für eventuelles Upscaling in Fallbacks
 )
+
 
 # ---------------------------------------------------------------------
 # Hilfsfunktionen
@@ -41,7 +48,7 @@ def create_summary_file(
     output_dir: str,
     image_files: list[str],
     methods: list[Tuple[str, callable]],
-    resolution: Tuple[int, int]
+    resolution: Tuple[int, int],
 ) -> None:
     p = os.path.join(output_dir, "processing_summary.txt")
     with open(p, "w", encoding="utf-8") as f:
@@ -55,12 +62,13 @@ def create_summary_file(
         f.write("BILDER:\n")
         for im in image_files:
             g = cv2.imread(im)
-            if g is None: continue
-            h,w = g.shape[:2]
+            if g is None:
+                continue
+            h, w = g.shape[:2]
             f.write(f"• {Path(im).name}  ({w}×{h})\n")
 
         f.write("\nMETHODEN:\n")
-        for i,(n,_) in enumerate(methods,1):
+        for i, (n, _) in enumerate(methods, 1):
             f.write(f"{i:02d}. {n}\n")
 
         f.write("\nFormat: PNG  • invertiert  • einheitliche Auflösung\n")
@@ -71,9 +79,7 @@ def create_summary_file(
 # Verarbeitung
 # ---------------------------------------------------------------------
 def process_images(
-    input_dir: str,
-    output_dir: str,
-    selected_methods: list[str] | None = None
+    input_dir: str, output_dir: str, selected_methods: list[str] | None = None
 ) -> None:
     out_root = create_output_structure(output_dir)
     imgs = get_image_files(input_dir)
@@ -129,16 +135,21 @@ def process_images(
 # ---------------------------------------------------------------------
 def list_available():
     print("\nVERFÜGBARE METHODEN")
-    for i,(n,_) in enumerate(get_all_methods(),1):
+    for i, (n, _) in enumerate(get_all_methods(), 1):
         print(f"{i:02d}. {n}")
+
 
 def main() -> None:
     ap = argparse.ArgumentParser(
         description="Edge-Detection-Batch-Tool (einheitliche Auflösung, invertiert)"
     )
-    ap.add_argument("--input_dir",  required=False)
-    ap.add_argument("--output_dir", required=False)
-    ap.add_argument("--methods", nargs="+")
+    ap.add_argument(
+        "--input_dir", type=str, required=True, help="Ordner mit Eingabebildern"
+    )
+    ap.add_argument(
+        "--output_dir", type=str, required=True, help="Zielordner für Ergebnisse"
+    )
+    ap.add_argument("--methods", nargs="+", help="Liste der Methoden, sonst alle")
     ap.add_argument("--list-methods", action="store_true")
     args = ap.parse_args()
 
@@ -146,10 +157,13 @@ def main() -> None:
         list_available()
         return
 
-    if not (args.input_dir and args.output_dir):
-        ap.print_help(); return
+    if not os.path.isdir(args.input_dir):
+        ap.error(f"Input-Ordner nicht gefunden: {args.input_dir}")
+    if not os.path.isdir(args.output_dir):
+        os.makedirs(args.output_dir, exist_ok=True)
 
     process_images(args.input_dir, args.output_dir, args.methods)
+
 
 if __name__ == "__main__":
     main()
