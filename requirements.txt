@@ -19,8 +19,8 @@ torchvision>=0.10.0
 kornia>=0.6.0
 
 # --------------------------------------------------
-# Kantenerkennung (angepasster Fork)
-pytorch-hed @ git+https://github.com/Hoope1/pytorch-hed@v0.5.1
+# Kantenerkennung (pytorch-hed entfernt - war nicht verfügbar)
+# Fallback-Implementierungen sind in detectors.py enthalten
 
 # --------------------------------------------------
 # Basis-Bibliotheken
@@ -48,8 +48,6 @@ mypy
 pytest
 pytest-cov
 opencv-python-stubs
-streamlit
 types-requests
 types-Pillow
 pre-commit
-
