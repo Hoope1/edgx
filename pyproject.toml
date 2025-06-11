@@ -1,6 +1,368 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "edgx"
 version = "0.1.0"
+description = "Edge Detection Studio - Zero-Config Suite für Kantenerkennung"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Edge Detection Studio Team"},
+]
+maintainers = [
+    {name = "Edge Detection Studio Team"},
+]
+keywords = [
+    "edge detection", 
+    "computer vision", 
+    "image processing", 
+    "opencv", 
+    "pytorch", 
+    "streamlit",
+    "gui",
+    "cli",
+    "canny",
+    "sobel", 
+    "laplacian",
+    "hed",
+    "machine learning",
+    "deep learning",
+    "kornia",
+    "batch processing"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers", 
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Education",
+    "Topic :: Scientific/Engineering :: Image Processing",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence", 
+    "Topic :: Multimedia :: Graphics :: Graphics Conversion",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: Microsoft :: Windows :: Windows 10", 
+    "Operating System :: Microsoft :: Windows :: Windows 11",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11", 
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+    "Framework :: Streamlit",
+]
+
+# Kern-Abhängigkeiten für Grundfunktionalität
+dependencies = [
+    "streamlit>=1.28.0",
+    "opencv-python>=4.5.0", 
+    "opencv-contrib-python>=4.5.0",
+    "torch>=1.9.0",
+    "torchvision>=0.10.0",
+    "kornia>=0.6.0",
+    "numpy>=1.21.0",
+    "pillow>=8.0.0",
+    "requests>=2.25.0",
+    "click>=7.0",
+    "altair>=4.0.0",
+]
+
+[project.optional-dependencies]
+# Vollständige Installation mit allen Features
+all = [
+    "streamlit>=1.28.0",
+    "opencv-python>=4.5.0",
+    "opencv-contrib-python>=4.5.0", 
+    "torch>=1.9.0",
+    "torchvision>=0.10.0",
+    "kornia>=0.6.0",
+    "numpy>=1.21.0",
+    "pillow>=8.0.0",
+    "requests>=2.25.0",
+    "click>=7.0",
+    "altair>=4.0.0",
+    "matplotlib>=3.3.0",
+    "scikit-image>=0.18.0",
+    "plotly>=5.0.0",
+    "watchdog>=2.1.0",
+    "jupyter>=1.0.0",
+]
+
+# Entwicklungs-Dependencies
+dev = [
+    "pytest>=6.0.0",
+    "pytest-cov>=2.0.0",
+    "black>=22.0.0",
+    "flake8>=4.0.0", 
+    "isort>=5.0.0",
+    "mypy>=0.900",
+    "pre-commit>=2.0.0",
+    "opencv-python-stubs",
+    "types-requests",
+    "types-Pillow",
+]
+
+# Nur GUI-Komponenten
+gui = [
+    "streamlit>=1.28.0",
+    "plotly>=5.0.0",
+    "altair>=4.0.0",
+    "watchdog>=2.1.0",
+]
+
+# CPU-optimierte PyTorch-Installation
+cpu = [
+    "torch>=1.9.0+cpu",
+    "torchvision>=0.10.0+cpu",
+]
+
+# GPU-optimierte Installation (CUDA 11.8)
+gpu = [
+    "torch>=1.9.0+cu118", 
+    "torchvision>=0.10.0+cu118",
+    "kornia>=0.6.0",
+]
+
+# Wissenschaftliche/Analyse-Tools
+science = [
+    "matplotlib>=3.3.0",
+    "scikit-image>=0.18.0", 
+    "jupyter>=1.0.0",
+    "plotly>=5.0.0",
+]
+
+# Test-spezifische Dependencies
+test = [
+    "pytest>=6.0.0",
+    "pytest-cov>=2.0.0",
+    "pytest-xdist>=2.0.0",
+]
+
+[project.scripts]
+edgx-cli = "edgx.run_edge_detectors:main"
+edgx-gui = "edgx.streamlit_app:main" 
+edgx-test = "edgx.detectors:main"
+
+[project.urls]
+Homepage = "https://github.com/edge-detection-studio/edgx"
+Repository = "https://github.com/edge-detection-studio/edgx.git"
+Documentation = "https://github.com/edge-detection-studio/edgx/blob/main/README.md"
+"Bug Reports" = "https://github.com/edge-detection-studio/edgx/issues"
+Changelog = "https://github.com/edge-detection-studio/edgx/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
-packages = ["edgx"]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["edgx*"]
+exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+edgx = [
+    "models/**/*",
+    "*.yml", 
+    "*.yaml",
+    "*.txt",
+    "*.json",
+]
+
+# =============================================================================
+# Development Tools Configuration
+# =============================================================================
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg  
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | models
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+src_paths = ["src", "tests"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = false
+disallow_untyped_decorators = false
+no_implicit_optional = false
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+ignore_missing_imports = true
+follow_imports = "silent"
+
+[[tool.mypy.overrides]]
+module = [
+    "cv2.*",
+    "torch.*", 
+    "torchvision.*",
+    "kornia.*",
+    "streamlit.*",
+    "PIL.*",
+    "numpy.*",
+    "matplotlib.*",
+    "sklearn.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = [
+    "-ra",
+    "-q", 
+    "--tb=short",
+    "--strict-markers",
+    "--disable-warnings",
+]
+testpaths = ["tests"]
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "gpu: marks tests as requiring GPU",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+parallel = true
+omit = [
+    "*/tests/*",
+    "*/test_*.py", 
+    "*/__pycache__/*",
+    "*/models/*",
+    "*/temp/*",
+]
+
+[tool.coverage.paths]
+edgx = ["src/edgx", "*/edgx/src/edgx"]
+tests = ["tests", "*/edgx/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError", 
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "if typing.TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+ignore_errors = true
+show_missing = true
+precision = 2
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+# =============================================================================
+# Build and Packaging Configuration
+# =============================================================================
+
+[tool.setuptools_scm]
+write_to = "src/edgx/_version.py"
+version_scheme = "guess-next-dev"
+local_scheme = "dirty-tag"
+
+[tool.wheel]
+universal = false
+
+[tool.bdist_wheel]
+universal = false
+
+# =============================================================================
+# Linting and Code Quality
+# =============================================================================
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = [
+    "E203",  # whitespace before ':'
+    "E266",  # too many leading '#' for block comment
+    "E501",  # line too long (handled by black)
+    "W503",  # line break before binary operator
+    "E402",  # module level import not at top of file
+    "E701",  # multiple statements on one line (colon)
+    "E731",  # do not assign a lambda expression, use a def
+    "E722",  # do not use bare 'except'
+    "E741",  # ambiguous variable name 'l'
+    "E265",  # block comment should start with '# '
+    "W504",  # line break after binary operator
+]
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist", 
+    ".eggs",
+    "*.egg-info",
+    ".venv",
+    ".tox",
+    ".mypy_cache",
+    "models",
+]
+per-file-ignores = [
+    "__init__.py:F401",
+    "tests/*:S101,S603,S607",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", "scripts", "docs"]
+skips = ["B101", "B601"]
+
+# =============================================================================
+# Pre-commit Configuration Reference
+# =============================================================================
+
+# Hinweis: Tatsächliche pre-commit Konfiguration ist in .pre-commit-config.yaml
+# Diese Sektion dient nur als Referenz für die verfügbaren Tools
+
+[tool.pre-commit-config]
+repos = [
+    {repo = "https://github.com/psf/black", rev = "24.3.0", hooks = ["black"]},
+    {repo = "https://github.com/pycqa/isort", rev = "5.12.0", hooks = ["isort"]}, 
+    {repo = "https://github.com/pycqa/flake8", rev = "6.1.0", hooks = ["flake8"]},
+    {repo = "https://github.com/pre-commit/mirrors-mypy", rev = "v1.8.0", hooks = ["mypy"]},
+]
