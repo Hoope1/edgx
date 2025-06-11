@@ -282,3 +282,8 @@ with tab5:
     else:
         st.info("Bitte zunächst Bilder *und* Methoden auswählen")
 
+# --------------------------------------------------------------
+# Ende – Hilfstexte / Footer
+# --------------------------------------------------------------
+st.markdown("---")
+st.caption("Edge Detection Studio • Powered by Streamlit + OpenCV + PyTorch")
