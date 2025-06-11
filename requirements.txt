@@ -1,10 +1,41 @@
-# OpenCV
-opencv-python
-opencv-contrib-python   # StructuredForests API
+# --------------------------------------------------
+# GUI Framework
+streamlit>=1.28.0
+plotly>=5.0.0          # (optional – für interaktive Charts)
+watchdog>=2.1.0        # File-Watching
 
-# Deep Learning / Filter
-torch      # CPU‑Version – GPU‑User wählen passende Build
-kornia     # GPU‑beschleunigte Canny/Sobel
+# --------------------------------------------------
+# Computer Vision
+opencv-python>=4.5.0
+opencv-contrib-python>=4.5.0   # Structured Forests etc.
 
-# Utility
-requests
+# --------------------------------------------------
+# Deep-Learning Framework
+torch>=1.9.0           # (CPU Build – GPU-User wählen passende WHL)
+torchvision>=0.10.0
+
+# --------------------------------------------------
+# GPU-beschleunigte Filter
+kornia>=0.6.0
+
+# --------------------------------------------------
+# Kantenerkennung (pip-Paket)
+pytorch-hed
+
+# --------------------------------------------------
+# Basis-Bibliotheken
+numpy>=1.21.0
+pillow>=8.0.0
+requests>=2.25.0
+click>=7.0
+altair>=4.0.0
+
+# --------------------------------------------------
+# (Optional) Visualisierung & Analyse
+matplotlib>=3.3.0
+scikit-image>=0.18.0
+
+# --------------------------------------------------
+# Development / Testing (optional)
+pytest>=6.0.0
+jupyter>=1.0.0
