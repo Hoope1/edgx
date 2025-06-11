@@ -117,6 +117,17 @@ python run_edge_detectors.py --input_dir images --output_dir results --methods K
 ```
 Die Ergebnisse liegen unter `results/edge_detection_results` als `{bildname}_{algorithmus}.png`. Die Datei `processing_summary.txt` fasst Auflösung und Methoden zusammen.
 
+## Entwickler-Setup
+Für Code-Beiträge wird [pre-commit](https://pre-commit.com) genutzt. Nach dem
+Clonen des Repos reicht einmalig:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+Damit laufen Formatierung und Linting automatisch vor jedem Commit.
+
 ## 5. Architektur & Code-Struktur
 - **detectors.py** – Algorithmen, Modell-Downloads und Hilfsfunktionen
 - **gui_components.py** – wiederverwendbare Widgets (Folder-Picker, Batch-Prozessor)

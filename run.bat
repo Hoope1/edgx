@@ -41,7 +41,7 @@ python -m pip install streamlit opencv-python opencv-contrib-python torch torchv
 :: -------------------------------------------------
 :: 4) Modelle
 :: -------------------------------------------------
-python detectors.py --init-models
+python -m edgx.detectors --init-models
 
 :: -------------------------------------------------
 :: 5) Verzeichnisstruktur
@@ -54,6 +54,6 @@ if not exist models  mkdir models
 :: 6) Starte Streamlit
 :: -------------------------------------------------
 echo 🚀  Starte GUI …
-streamlit run streamlit_app.py --server.headless false --server.port 8501
+streamlit run src\edgx\streamlit_app.py --server.headless false --server.port 8501
 echo 👋  beendet – bye
 pause

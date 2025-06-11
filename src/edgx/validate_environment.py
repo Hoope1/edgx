@@ -3,6 +3,9 @@
 import platform
 import sys
 import warnings
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def validate_environment():
@@ -23,6 +26,6 @@ def validate_environment():
 if __name__ == "__main__":
     try:
         validate_environment()
-        print("Environment OK")
+        logger.info("Environment OK")
     except AssertionError as e:
-        print(f"Environment check failed: {e}")
+        logger.error("Environment check failed: %s", e)
