@@ -1,11 +1,24 @@
-import sys
+"""Environment validation utilities."""
+
 import platform
+import sys
+import warnings
+
 
 def validate_environment():
     """Sicherstellen, dass Umgebung den Anforderungen entspricht."""
-    assert sys.version_info >= (3, 10), "Python 3.10+ erforderlich"
-    assert platform.system() == "Windows", "Windows-Umgebung erforderlich"
-    assert platform.release() in ["10", "11"], "Windows 10/11 erforderlich"
+    if sys.version_info < (3, 10):
+        warnings.warn(
+            "Python 3.10 oder neuer wird empfohlen. Funktionalität ist sonst "
+            "nicht garantiert.",
+            RuntimeWarning,
+        )
+    if platform.system() != "Windows" or platform.release() not in {"10", "11"}:
+        warnings.warn(
+            "Entwickelt für Windows 10/11. Andere Plattformen sind nicht " "getestet.",
+            RuntimeWarning,
+        )
+
 
 if __name__ == "__main__":
     try:

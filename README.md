@@ -155,6 +155,11 @@ Der Datenfluss lautet: GUI/CLI → Bild- & Methodenwahl → Verarbeitung in `det
 - `tools/check_all.sh` führt `flake8`, `black`, `isort`, `mypy` und `pytest` aus.
 - Momentan sammelt `pytest` keine Tests ("no tests collected").
 - Offiziell werden nur Windows 10/11 und Python 3.10 unterstützt.
+- Für lokale Checks kann `pre-commit` verwendet werden:
+  ```bash
+  pip install pre-commit
+  pre-commit install
+  ```
 
 ## 7. Erweiterung
 1. Neue Methode als `run_<Name>(path, target_size)` in `detectors.py` implementieren und `standardize_output()` aufrufen.
