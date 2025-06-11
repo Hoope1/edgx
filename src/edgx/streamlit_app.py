@@ -20,10 +20,10 @@ import streamlit as st
 
 # interne Module
 try:
-    from detectors import (
+    from .detectors import (
         get_all_methods, get_max_resolution, standardize_output
     )
-    from gui_components import (
+    from .gui_components import (
         folder_picker, image_gallery, method_selector_advanced,
         progress_tracker, batch_processor
     )

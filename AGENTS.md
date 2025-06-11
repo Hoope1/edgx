@@ -22,10 +22,10 @@ Utilities	Requests ≥ 2.25	kompatibel mit Py 3.10(pypi.org)
 
 3 · Verzeichnis-Topologie
 edge_detection_tool/
-├── detectors.py               # Algorithmus-Katalog
-├── run_edge_detectors.py      # Batch-CLI
-├── streamlit_app.py           # Streamlit GUI
-├── gui_components.py          # Wiederverwendbare UI-Bausteine
+├── src/edgx/detectors.py               # Algorithmus-Katalog
+├── src/edgx/run_edge_detectors.py      # Batch-CLI
+├── src/edgx/streamlit_app.py           # Streamlit GUI
+├── src/edgx/gui_components.py          # Wiederverwendbare UI-Bausteine
 ├── run.bat                    # Windows-Bootstrap (Python 3.10-venv)
 ├── requirements.txt
 ├── models/                    # DL-Gewichte (auto-Download)
@@ -39,7 +39,7 @@ run.bat     :: 1) erstellt venv (3.10)  2) pip install -r requirements.txt
              3) lädt Modelle  4) startet Streamlit-GUI auf http://localhost:8501
 Der Batch-Prozess nutzt das offizielle venv-Modul aus Python 3.10, das auch unter Windows 11 voll unterstützt wird.(docs.python.org)
 4.2 CLI-Pipeline (Headless)
-python run_edge_detectors.py `
+python -m edgx.run_edge_detectors `
        --input_dir .\images `
        --output_dir .\results `
        --methods HED_PyTorch Kornia_Canny
@@ -65,7 +65,7 @@ Sidebar-Presets: „Empfohlene“, „Schnell“, „Qualität“, „Alle“
 
 Progress: Live-Bar, ETA-Berechnung, Fehler-Log
 
-(GUI-Run-Befehl → streamlit run streamlit_app.py)(docs.streamlit.io)
+(GUI-Run-Befehl → streamlit run src/edgx/streamlit_app.py)(docs.streamlit.io)
 
 6 · Coding-Konventionen
 
@@ -114,7 +114,7 @@ Tests: Unit-Test (pytest) + Smoke-Test der CLI müssen grün sein.(support.micro
 Ebene	Tool	Win 11-Cmd
 Unit	pytest	pytest -q (3.10 venv)(python.org)
 Lint	flake8 / ruff	optional
-Smoke	Streamlit	streamlit run streamlit_app.py --headless -p 8888 → HTTP 200
+Smoke	Streamlit	streamlit run src/edgx/streamlit_app.py --headless -p 8888 → HTTP 200
 Alle Checks laufen in GitHub Actions - Windows-Latest (Win 11)-Runner.
 
 9 · Security & Performance
@@ -162,10 +162,10 @@ Diese Datei bietet umfassende Anleitung für KI-Agenten (GitHub Copilot, OpenAI 
 ### Verzeichnisstruktur
 ```
 edge_detection_tool/
-├── detectors.py               # Algorithmus-Katalog (Hauptlogik)
-├── run_edge_detectors.py      # Batch-CLI-Interface  
-├── streamlit_app.py           # Streamlit GUI-Hauptdatei
-├── gui_components.py          # Wiederverwendbare UI-Komponenten
+├── src/edgx/detectors.py               # Algorithmus-Katalog (Hauptlogik)
+├── src/edgx/run_edge_detectors.py      # Batch-CLI-Interface
+├── src/edgx/streamlit_app.py           # Streamlit GUI-Hauptdatei
+├── src/edgx/gui_components.py          # Wiederverwendbare UI-Komponenten
 ├── run.bat                    # Windows-Bootstrap-Script
 ├── requirements.txt           # Python-Abhängigkeiten
 ├── models/                    # DL-Gewichte (auto-Download)
@@ -278,7 +278,7 @@ pip install pytest pytest-cov
 - **Framework**: pytest
 - **Abdeckung**: Mindestens 80% für `detectors.py`
 - **Dateimuster**: `test_*.py` im Root-Verzeichnis
-- **Ausführung**: `pytest -v --cov=detectors`
+- **Ausführung**: `pytest -v --cov=edgx`
 
 ### Integration Tests  
 - **CLI-Tests**: Vollständige Pipeline mit Beispieldaten
@@ -286,8 +286,8 @@ pip install pytest pytest-cov
 - **Model-Tests**: Download und Initialisierung
 
 ### Smoke Tests
-- **Streamlit**: `streamlit run streamlit_app.py --headless --server.port 8888`
-- **CLI**: `python run_edge_detectors.py --input_dir .\images --output_dir .\results`
+- **Streamlit**: `streamlit run src/edgx/streamlit_app.py --headless --server.port 8888`
+- **CLI**: `python -m edgx.run_edge_detectors --input_dir .\images --output_dir .\results`
 ```
 
 ### Test-Erstellung für neue Features
@@ -369,16 +369,16 @@ Kurze Zusammenfassung der Änderungen und deren Zweck.
 python -m flake8 . --max-line-length=88 --extend-ignore=E203,W503
 
 # 2. Type Checking (optional, aber empfohlen)
-python -m mypy detectors.py streamlit_app.py
+python -m mypy src/edgx/detectors.py src/edgx/streamlit_app.py
 
 # 3. Unit Tests ausführen
-pytest -v --cov=detectors --cov-report=term-missing
+pytest -v --cov=edgx --cov-report=term-missing
 
 # 4. CLI Smoke Test
-python run_edge_detectors.py --input_dir .\images --output_dir .\results --methods Canny
+python -m edgx.run_edge_detectors --input_dir .\images --output_dir .\results --methods Canny
 
 # 5. GUI Smoke Test  
-timeout 10 streamlit run streamlit_app.py --headless --server.port 8888
+timeout 10 streamlit run src/edgx/streamlit_app.py --headless --server.port 8888
 
 # 6. Requirements-Validierung
 pip check
@@ -586,10 +586,10 @@ Primäre Nutzer	CV-Forschende · Designer · Analyst*innen · Studierende
 
 2 · Repository-Topologie
 edge_detection_tool/
-├── detectors.py               # Algorithmen-Katalog
-├── run_edge_detectors.py      # Batch-CLI
-├── streamlit_app.py           # GUI-Hauptdatei
-├── gui_components.py          # Wiederverwendbare Streamlit-Bausteine
+├── src/edgx/detectors.py               # Algorithmen-Katalog
+├── src/edgx/run_edge_detectors.py      # Batch-CLI
+├── src/edgx/streamlit_app.py           # GUI-Hauptdatei
+├── src/edgx/gui_components.py          # Wiederverwendbare Streamlit-Bausteine
 ├── run.bat                    # Windows-Bootstrap (venv, pip, GUI-Start)
 ├── requirements.txt           # Abhängigkeiten (Win 11 + Py 3.10 Wheels)
 ├── models/                    # DL-Gewichte (auto-Download)
@@ -616,7 +616,7 @@ CI	GitHub Actions	windows-latest (Win 11 Runner) (docs.github.com)
 :: Voraussetzung: python --version  →  3.10.x 64-Bit
 run.bat      :: erstellt venv, installiert Wheels, lädt Modelle, startet GUI (Port 8501)
 4.2 CLI-Batch
-python run_edge_detectors.py `
+python -m edgx.run_edge_detectors `
        --input_dir .\images `
        --output_dir .\results `
        --methods HED_PyTorch Kornia_Canny
@@ -638,10 +638,10 @@ def run_new_algo(path: str, target_size: tuple[int, int]) -> np.ndarray:
 6 · Testing- & CI-Matrix
 Ebene	Tool / Befehl	Mindest-Kriterium
 Lint	flake8 .	0 Error
-Types	mypy detectors.py	keine error:-Zeilen
-Unit	pytest -q --cov=detectors	≥ 80 % Coverage
-Smoke CLI	python run_edge_detectors.py --input_dir images --output_dir tmp	Rückgabecode 0
-Smoke GUI	streamlit run streamlit_app.py --headless -p 8888	HTTP 200 in 30 s
+Types	mypy src/edgx/detectors.py	keine error:-Zeilen
+Unit	pytest -q --cov=edgx	≥ 80 % Coverage
+Smoke CLI	python -m edgx.run_edge_detectors --input_dir images --output_dir tmp	Rückgabecode 0
+Smoke GUI	streamlit run src/edgx/streamlit_app.py --headless -p 8888	HTTP 200 in 30 s
 GitHub Actions nutzt windows-latest Runner, Python 3.10, setzt obige Checks um und lädt den Ordner results/edge_detection_results als Artefakt hoch. (docs.github.com)
 
 7 · Pull-Request-Leitfaden
