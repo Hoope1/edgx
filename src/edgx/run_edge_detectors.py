@@ -15,14 +15,17 @@ import os
 import time
 from pathlib import Path
 from typing import List, Tuple
+import logging
 
 import cv2
 
-from detectors import standardize_output  # für eventuelles Upscaling in Fallbacks
-from detectors import (
+from .detectors import standardize_output  # für eventuelles Upscaling in Fallbacks
+from .detectors import (
     get_all_methods,
     get_max_resolution,
 )
+
+logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------
@@ -42,6 +45,14 @@ def get_image_files(input_dir: str) -> List[str]:
         imgs += glob.glob(os.path.join(input_dir, e))
         imgs += glob.glob(os.path.join(input_dir, e.upper()))
     return sorted(list(set(imgs)))
+
+
+def parse_size(value: str) -> Tuple[int, int]:
+    try:
+        w, h = value.lower().split("x")
+        return int(w), int(h)
+    except Exception as e:
+        raise argparse.ArgumentTypeError("--size erwartet WxH") from e
 
 
 def create_summary_file(
@@ -72,23 +83,33 @@ def create_summary_file(
             f.write(f"{i:02d}. {n}\n")
 
         f.write("\nFormat: PNG  • invertiert  • einheitliche Auflösung\n")
-    print(f"[info] Summary: {p}")
+    logger.info("Summary: %s", p)
 
 
 # ---------------------------------------------------------------------
 # Verarbeitung
 # ---------------------------------------------------------------------
 def process_images(
-    input_dir: str, output_dir: str, selected_methods: list[str] | None = None
+    input_dir: str,
+    output_dir: str,
+    selected_methods: list[str] | None = None,
+    *,
+    size: tuple[int, int] | None = None,
+    scale: float | None = None,
 ) -> None:
     out_root = create_output_structure(output_dir)
     imgs = get_image_files(input_dir)
     if not imgs:
-        print(f"[error] Keine Bilder in {input_dir}")
+        logger.error("Keine Bilder in %s", input_dir)
         return
 
-    max_res = get_max_resolution(imgs)
-    print(f"[max  ] Ziel-Auflösung: {max_res[0]}×{max_res[1]}")
+    if size is not None:
+        max_res = size
+    else:
+        max_res = get_max_resolution(imgs)
+        if scale is not None:
+            max_res = (int(max_res[0] * scale), int(max_res[1] * scale))
+    logger.info("Ziel-Auflösung: %d×%d", max_res[0], max_res[1])
 
     all_methods = get_all_methods()
     if selected_methods:
@@ -97,7 +118,7 @@ def process_images(
         methods = all_methods
 
     if not methods:
-        print("[error] Keine gültigen Methoden ausgewählt")
+        logger.error("Keine gültigen Methoden ausgewählt")
         return
 
     tot_ops = len(imgs) * len(methods)
@@ -106,12 +127,12 @@ def process_images(
 
     for img_path in imgs:
         name = Path(img_path).stem
-        print(f"\n[img ] {Path(img_path).name}")
+        logger.info("[img] %s", Path(img_path).name)
         for mname, mfun in methods:
             op += 1
             prog = op / tot_ops * 100
             try:
-                print(f"  {prog:5.1f}% → {mname} … ", end="", flush=True)
+                logger.debug("%5.1f%% → %s ...", prog, mname)
                 res = mfun(img_path, target_size=max_res)
                 # Sollte eine Methode *nicht* über standardize_output skalieren,
                 # sichern wir hier die Größengleichheit ab:
@@ -120,12 +141,12 @@ def process_images(
                     res = standardize_output(res, max_res)  # invert / uint8
                 out_name = f"{name}_{mname}.png"
                 cv2.imwrite(os.path.join(out_root, out_name), res)
-                print("✓")
+                logger.info("done")
             except Exception as e:
-                print(f"✗ {e}")
+                logger.error("%s", e)
 
     dur = time.time() - start
-    print(f"\n[done] {tot_ops} Operationen  • {dur:.1f}s gesamt")
+    logger.info("%d Operationen abgeschlossen in %.1fs", tot_ops, dur)
 
     create_summary_file(out_root, imgs, methods, max_res)
 
@@ -134,24 +155,33 @@ def process_images(
 # CLI
 # ---------------------------------------------------------------------
 def list_available():
-    print("\nVERFÜGBARE METHODEN")
+    logger.info("\nVERFÜGBARE METHODEN")
     for i, (n, _) in enumerate(get_all_methods(), 1):
-        print(f"{i:02d}. {n}")
+        logger.info("%02d. %s", i, n)
 
 
 def main() -> None:
+    logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
+
     ap = argparse.ArgumentParser(
         description="Edge-Detection-Batch-Tool (einheitliche Auflösung, invertiert)"
     )
     ap.add_argument(
         "--input_dir", type=str, required=True, help="Ordner mit Eingabebildern"
     )
-    ap.add_argument(
-        "--output_dir", type=str, required=True, help="Zielordner für Ergebnisse"
-    )
-    ap.add_argument("--methods", nargs="+", help="Liste der Methoden, sonst alle")
+    ap.add_argument("--output_dir", dest="output_dir", help="Zielordner für Ergebnisse")
+    ap.add_argument("--methods", nargs="+", help="Liste der Methoden")
+    group = ap.add_mutually_exclusive_group()
+    group.add_argument("--size", type=parse_size, help="Zielauflösung WxH")
+    group.add_argument("--scale", type=float, help="Skalierungsfaktor")
     ap.add_argument("--list-methods", action="store_true")
     args = ap.parse_args()
+
+    if (args.size or args.scale) and args.output_dir is None:
+        raise argparse.ArgumentTypeError("--size/--scale erfordert --output_dir")
+
+    output_dir = args.output_dir or "results"
+    methods = args.methods or ["Laplacian"]
 
     if args.list_methods:
         list_available()
@@ -159,10 +189,16 @@ def main() -> None:
 
     if not os.path.isdir(args.input_dir):
         ap.error(f"Input-Ordner nicht gefunden: {args.input_dir}")
-    if not os.path.isdir(args.output_dir):
-        os.makedirs(args.output_dir, exist_ok=True)
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir, exist_ok=True)
 
-    process_images(args.input_dir, args.output_dir, args.methods)
+    process_images(
+        args.input_dir,
+        output_dir,
+        methods,
+        size=args.size,
+        scale=args.scale,
+    )
 
 
 if __name__ == "__main__":

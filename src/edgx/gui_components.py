@@ -2,10 +2,16 @@
 Wiederverwendbare GUI-Bausteine für das Edge-Detection-Studio
 """
 from __future__ import annotations
-import os, time, cv2, numpy as np
+import os
+import time
+import cv2
+import numpy as np
+import logging
 from pathlib import Path
 from typing import List, Tuple, Dict, Optional
 import streamlit as st
+
+logger = logging.getLogger(__name__)
 
 # --------------------------------------------------------------
 # Ordner-Picker
@@ -100,7 +106,7 @@ def method_selector_advanced(all_methods:List[Tuple[str,callable]])->List[str]:
 # --------------------------------------------------------------
 def batch_processor(images:List[str], methods:List[str],
                     output_dir:str, settings:Dict)->List[Dict]:
-    from detectors import get_all_methods
+    from .detectors import get_all_methods
     funcs = dict(get_all_methods())
     os.makedirs(output_dir, exist_ok=True)
     total = len(images)*len(methods)
@@ -117,7 +123,8 @@ def batch_processor(images:List[str], methods:List[str],
                 cv2.imwrite(os.path.join(out_dir,out_name), res)
                 status="success"
             except Exception as e:
-                status="error"; print(e)
+                status = "error"
+                logger.error("%s", e)
             log.append({"image":img,"method":m,"status":status})
             progress_tracker(total,op,img,m,start)
     return log
