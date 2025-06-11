@@ -39,3 +39,17 @@ scikit-image>=0.18.0
 # Development / Testing (optional)
 pytest>=6.0.0
 jupyter>=1.0.0
+
+# Development Tools
+black
+flake8
+isort
+mypy
+pytest
+pytest-cov
+opencv-python-stubs
+streamlit
+types-requests
+types-Pillow
+pre-commit
+
