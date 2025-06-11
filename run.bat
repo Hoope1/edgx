@@ -1,18 +1,59 @@
 @echo off
-REM 1) Virtuelle Umgebung anlegen (falls nicht vorhanden)
-IF NOT EXIST venv (
-    python -m venv venv
+echo ========================================
+echo  🎨  Edge Detection Studio Setup
+echo ========================================
+
+:: -------------------------------------------------
+:: 1) Python-Verfügbarkeit prüfen
+:: -------------------------------------------------
+python --version >nul 2>&1
+if errorlevel 1 (
+    echo ❌  Python nicht gefunden. Bitte installieren!
+    pause & exit /b 1
+)
+for /f "tokens=2 delims= " %%v in ('python --version') do set PYVER=%%v
+echo ✅  Python %%PYVER%% gefunden
+
+:: -------------------------------------------------
+:: 2) Virtuelle Umgebung
+:: -------------------------------------------------
+if not exist venv (
+    echo 📦  Erstelle venv …
+    python -m venv venv || (echo Fehler & pause & exit /b 1)
+) else (
+    echo ✅  venv vorhanden
 )
 
-REM 2) Aktivieren
 call venv\Scripts\activate
 
-REM 3) Requirements installieren (KEIN pip‑Upgrade, verhindert WinError 5)
-python -m pip install -r requirements.txt
+:: -------------------------------------------------
+:: 3) pip updaten & Requirements
+:: -------------------------------------------------
+echo 📚  Installiere Requirements …
+python -m pip install --upgrade pip --quiet
+python -m pip install -r requirements.txt || goto :req_fallback
+goto :req_ok
+:req_fallback
+echo ⚠️  Sammel-Installation fehlgeschlagen – installiere Kernpakete …
+python -m pip install streamlit opencv-python opencv-contrib-python torch torchvision kornia requests pillow numpy pytorch-hed
+:req_ok
 
-REM 4) Modelle herunterladen
+:: -------------------------------------------------
+:: 4) Modelle
+:: -------------------------------------------------
 python detectors.py --init-models
 
-REM 5) Batch‑Kantenerkennung
-python run_edge_detectors.py --input_dir images --output_dir results
+:: -------------------------------------------------
+:: 5) Verzeichnisstruktur
+:: -------------------------------------------------
+if not exist images  mkdir images
+if not exist results mkdir results
+if not exist models  mkdir models
+
+:: -------------------------------------------------
+:: 6) Starte Streamlit
+:: -------------------------------------------------
+echo 🚀  Starte GUI …
+streamlit run streamlit_app.py --server.headless false --server.port 8501
+echo 👋  beendet – bye
 pause
